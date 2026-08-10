@@ -4,7 +4,8 @@ from database import (
     add_project,
     get_projects,
     get_tasks,
-    project_exists
+    project_exists,
+    delete_project
 )
 
 
@@ -21,7 +22,10 @@ st.write(
 
 st.subheader("➕ Create Project")
 
-with st.form("create_project_form"):
+
+with st.form(
+    "create_project_form"
+):
 
     name = st.text_input(
         "Project Name"
@@ -39,35 +43,34 @@ with st.form("create_project_form"):
         "Create Project"
     )
 
+
     if submitted:
 
-        if name.strip() == "":
+        if not name.strip():
 
             st.warning(
                 "Please enter a project name."
             )
 
+        elif project_exists(name.strip()):
+
+            st.warning(
+                "A project with this name already exists."
+            )
+
         else:
 
-            if project_exists(name):
+            add_project(
+                name.strip(),
+                description,
+                deadline
+            )
 
-                st.warning(
-                    "A project with this name already exists."
-                )
+            st.success(
+                "Project created successfully!"
+            )
 
-            else:
-
-                add_project(
-                    name,
-                    description,
-                    deadline
-                )
-
-                st.success(
-                    "Project created successfully!"
-                )
-
-                st.rerun()
+            st.rerun()
 
 
 st.divider()
@@ -77,7 +80,10 @@ st.divider()
 # Existing Projects
 # =========================
 
-st.subheader("📂 Your Projects")
+st.subheader(
+    "📂 Your Projects"
+)
+
 
 projects = get_projects()
 
@@ -87,8 +93,10 @@ tasks = get_tasks()
 if not projects:
 
     st.info(
-        "No projects yet. Create your first project above."
+        "No projects yet. "
+        "Create your first project above."
     )
+
 
 else:
 
@@ -128,8 +136,8 @@ else:
         if total_tasks > 0:
 
             progress = (
-                completed_tasks /
-                total_tasks
+                completed_tasks
+                / total_tasks
             )
 
         else:
@@ -141,7 +149,9 @@ else:
         # Project Card
         # =========================
 
-        with st.container(border=True):
+        with st.container(
+            border=True
+        ):
 
             st.markdown(
                 f"### 📁 {project_name}"
@@ -231,3 +241,70 @@ else:
 
 
                         st.divider()
+
+
+            # =========================
+            # Delete Project
+            # =========================
+
+            st.divider()
+
+
+            if st.button(
+                "🗑 Delete Project",
+                key=f"delete_project_{project_id}"
+            ):
+
+                st.session_state[
+                    f"confirm_delete_{project_id}"
+                ] = True
+
+
+            # =========================
+            # Confirmation
+            # =========================
+
+            if st.session_state.get(
+                f"confirm_delete_{project_id}",
+                False
+            ):
+
+                st.warning(
+                    "This will delete the project "
+                    "and all associated tasks."
+                )
+
+
+                col1, col2 = st.columns(2)
+
+
+                with col1:
+
+                    if st.button(
+                        "Yes, Delete",
+                        key=f"confirm_{project_id}"
+                    ):
+
+                        delete_project(
+                            project_id
+                        )
+
+                        del st.session_state[
+                            f"confirm_delete_{project_id}"
+                        ]
+
+                        st.rerun()
+
+
+                with col2:
+
+                    if st.button(
+                        "Cancel",
+                        key=f"cancel_{project_id}"
+                    ):
+
+                        del st.session_state[
+                            f"confirm_delete_{project_id}"
+                        ]
+
+                        st.rerun()

@@ -10,12 +10,19 @@ from database import (
 
 st.title("📋 Tasks")
 
+st.write(
+    "Manage and track project tasks."
+)
+
+
 tasks = get_tasks()
 
 
 if not tasks:
 
-    st.info("No tasks yet.")
+    st.info(
+        "No tasks yet."
+    )
 
 else:
 
@@ -23,17 +30,25 @@ else:
     # Filters
     # =========================
 
-    st.subheader("🔎 Filter Tasks")
+    st.subheader(
+        "🔎 Filter Tasks"
+    )
+
 
     owners = sorted(
         set(
             task[3]
             for task in tasks
             if task[3]
+            and task[3] != "N/A"
         )
     )
 
-    owner_options = ["All"] + owners
+
+    owner_options = [
+        "All"
+    ] + owners
+
 
     priority_options = [
         "All",
@@ -42,6 +57,7 @@ else:
         "Low"
     ]
 
+
     status_options = [
         "All",
         "Todo",
@@ -49,7 +65,9 @@ else:
         "Done"
     ]
 
+
     col1, col2, col3 = st.columns(3)
+
 
     with col1:
 
@@ -58,12 +76,14 @@ else:
             owner_options
         )
 
+
     with col2:
 
         selected_priority = st.selectbox(
             "Priority",
             priority_options
         )
+
 
     with col3:
 
@@ -79,6 +99,7 @@ else:
 
     filtered_tasks = tasks
 
+
     if selected_owner != "All":
 
         filtered_tasks = [
@@ -87,6 +108,7 @@ else:
             if task[3] == selected_owner
         ]
 
+
     if selected_priority != "All":
 
         filtered_tasks = [
@@ -94,6 +116,7 @@ else:
             for task in filtered_tasks
             if task[4] == selected_priority
         ]
+
 
     if selected_status != "All":
 
@@ -106,20 +129,18 @@ else:
 
     st.divider()
 
+
     st.subheader(
         f"📋 {len(filtered_tasks)} Tasks"
     )
 
-
-    # =========================
-    # Display Tasks
-    # =========================
 
     if not filtered_tasks:
 
         st.info(
             "No tasks match the selected filters."
         )
+
 
     else:
 
@@ -134,12 +155,19 @@ else:
             deadline = task[6]
 
 
-            with st.container(border=True):
+            with st.container(
+                border=True
+            ):
 
                 st.markdown(
                     f"### {task_name}"
                 )
 
+
+                # =========================
+                # Priority Display
+                # =========================
+
                 if priority == "High":
 
                     priority_label = "🔴 High"
@@ -153,21 +181,29 @@ else:
                     priority_label = "🟢 Low"
 
 
-                if priority == "High":
-                    priority_label = "🔴 High"
-                elif priority == "Medium":
-                    priority_label = "🟡 Medium"
-                else:
-                    priority_label = "🟢 Low"
+                # =========================
+                # Deadline Display
+                # =========================
 
-                if deadline == "N/A" or deadline == "":
-                    deadline_label = "📅 No deadline"
+                if (
+                    deadline == "N/A"
+                    or deadline == ""
+                ):
+
+                    deadline_label = (
+                        "📅 No deadline"
+                    )
+
                 else:
-                    deadline_label = f"📅 {deadline}"
+
+                    deadline_label = (
+                        f"📅 {deadline}"
+                    )
+
 
                 st.caption(
-                    f"👤 {owner}   |   "
-                    f"🎯 {priority_label}   |   "
+                    f"👤 {owner} | "
+                    f"🎯 {priority_label} | "
                     f"{deadline_label}"
                 )
 
@@ -176,24 +212,30 @@ else:
                 # Status
                 # =========================
 
+                status_options_for_task = [
+                    "Todo",
+                    "In Progress",
+                    "Done"
+                ]
+
+
+                if status not in status_options_for_task:
+
+                    current_status_index = 0
+
+                else:
+
+                    current_status_index = (
+                        status_options_for_task.index(
+                            status
+                        )
+                    )
+
+
                 new_status = st.selectbox(
                     "Status",
-                    [
-                        "Todo",
-                        "In Progress",
-                        "Done"
-                    ],
-                    index=[
-                        "Todo",
-                        "In Progress",
-                        "Done"
-                    ].index(status)
-                    if status in [
-                        "Todo",
-                        "In Progress",
-                        "Done"
-                    ]
-                    else 0,
+                    status_options_for_task,
+                    index=current_status_index,
                     key=f"status_{task_id}"
                 )
 
@@ -209,10 +251,12 @@ else:
 
 
                 # =========================
-                # Edit
+                # Edit Task
                 # =========================
 
-                with st.expander("✏️ Edit Task"):
+                with st.expander(
+                    "✏️ Edit Task"
+                ):
 
                     edited_task_name = st.text_input(
                         "Task",
@@ -220,32 +264,41 @@ else:
                         key=f"edit_task_{task_id}"
                     )
 
+
                     edited_owner = st.text_input(
                         "Owner",
                         value=owner,
                         key=f"edit_owner_{task_id}"
                     )
 
+
+                    edit_priority_options = [
+                        "High",
+                        "Medium",
+                        "Low"
+                    ]
+
+
+                    if priority in edit_priority_options:
+
+                        priority_index = (
+                            edit_priority_options.index(
+                                priority
+                            )
+                        )
+
+                    else:
+
+                        priority_index = 1
+
+
                     edited_priority = st.selectbox(
                         "Priority",
-                        [
-                            "High",
-                            "Medium",
-                            "Low"
-                        ],
-                        index=[
-                            "High",
-                            "Medium",
-                            "Low"
-                        ].index(priority)
-                        if priority in [
-                            "High",
-                            "Medium",
-                            "Low"
-                        ]
-                        else 1,
+                        edit_priority_options,
+                        index=priority_index,
                         key=f"edit_priority_{task_id}"
                     )
+
 
                     edited_deadline = st.text_input(
                         "Deadline",
@@ -259,23 +312,31 @@ else:
                         key=f"save_{task_id}"
                     ):
 
-                        update_task(
-                            task_id,
-                            edited_task_name,
-                            edited_owner,
-                            edited_priority,
-                            edited_deadline
-                        )
+                        if not edited_task_name.strip():
 
-                        st.success(
-                            "Task updated successfully."
-                        )
+                            st.warning(
+                                "Task name cannot be empty."
+                            )
 
-                        st.rerun()
+                        else:
+
+                            update_task(
+                                task_id,
+                                edited_task_name.strip(),
+                                edited_owner.strip(),
+                                edited_priority,
+                                edited_deadline.strip()
+                            )
+
+                            st.success(
+                                "Task updated successfully."
+                            )
+
+                            st.rerun()
 
 
                 # =========================
-                # Delete
+                # Delete Task
                 # =========================
 
                 if st.button(

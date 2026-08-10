@@ -1,51 +1,68 @@
 import sqlite3
 
+
 DB_NAME = "flowpilot.db"
 
 
 def get_connection():
+
     return sqlite3.connect(DB_NAME)
 
+
+# =========================
+# Create Tables
+# =========================
 
 def create_tables():
 
     conn = get_connection()
-
     cursor = conn.cursor()
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS projects(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT,
-        description TEXT,
-        deadline TEXT
-    )
+        CREATE TABLE IF NOT EXISTS projects(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT,
+            description TEXT,
+            deadline TEXT
+        )
     """)
 
     cursor.execute("""
-    CREATE TABLE IF NOT EXISTS tasks(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        project_id INTEGER,
-        task_name TEXT,
-        owner TEXT,
-        priority TEXT,
-        status TEXT,
-        deadline TEXT
-    )
+        CREATE TABLE IF NOT EXISTS tasks(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            project_id INTEGER,
+            task_name TEXT,
+            owner TEXT,
+            priority TEXT,
+            status TEXT,
+            deadline TEXT
+        )
     """)
 
     conn.commit()
     conn.close()
-    
-def add_project(name, description, deadline):
+
+
+# =========================
+# Projects
+# =========================
+
+def add_project(
+    name,
+    description,
+    deadline
+):
 
     conn = get_connection()
-
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        INSERT INTO projects(name,description,deadline)
+        INSERT INTO projects(
+            name,
+            description,
+            deadline
+        )
         VALUES(?,?,?)
         """,
         (
@@ -56,14 +73,12 @@ def add_project(name, description, deadline):
     )
 
     conn.commit()
-
     conn.close()
 
 
 def get_projects():
 
     conn = get_connection()
-
     cursor = conn.cursor()
 
     cursor.execute(
@@ -76,7 +91,67 @@ def get_projects():
 
     return rows
 
-def add_task(project_id, task_name, owner, priority, status, deadline):
+
+def project_exists(name):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT COUNT(*)
+        FROM projects
+        WHERE name = ?
+        """,
+        (name,)
+    )
+
+    count = cursor.fetchone()[0]
+
+    conn.close()
+
+    return count > 0
+
+
+def delete_project(project_id):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    # Delete tasks belonging to project
+    cursor.execute(
+        """
+        DELETE FROM tasks
+        WHERE project_id = ?
+        """,
+        (project_id,)
+    )
+
+    # Delete project
+    cursor.execute(
+        """
+        DELETE FROM projects
+        WHERE id = ?
+        """,
+        (project_id,)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+# =========================
+# Tasks
+# =========================
+
+def add_task(
+    project_id,
+    task_name,
+    owner,
+    priority,
+    status,
+    deadline
+):
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -106,13 +181,15 @@ def add_task(project_id, task_name, owner, priority, status, deadline):
     conn.commit()
     conn.close()
 
+
 def get_tasks():
 
     conn = get_connection()
-
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM tasks")
+    cursor.execute(
+        "SELECT * FROM tasks"
+    )
 
     rows = cursor.fetchall()
 
@@ -120,7 +197,39 @@ def get_tasks():
 
     return rows
 
-def update_task_status(task_id, status):
+
+def task_exists(
+    project_id,
+    task_name
+):
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT COUNT(*)
+        FROM tasks
+        WHERE project_id = ?
+        AND task_name = ?
+        """,
+        (
+            project_id,
+            task_name
+        )
+    )
+
+    count = cursor.fetchone()[0]
+
+    conn.close()
+
+    return count > 0
+
+
+def update_task_status(
+    task_id,
+    status
+):
 
     conn = get_connection()
     cursor = conn.cursor()
@@ -139,7 +248,8 @@ def update_task_status(task_id, status):
 
     conn.commit()
     conn.close()
-    
+
+
 def update_task(
     task_id,
     task_name,
@@ -171,53 +281,7 @@ def update_task(
 
     conn.commit()
     conn.close()
-    
-def get_task_count():
 
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT COUNT(*) FROM tasks"
-    )
-
-    count = cursor.fetchone()[0]
-
-    conn.close()
-
-    return count
-
-def get_task_status_counts():
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute("""
-        SELECT status, COUNT(*)
-        FROM tasks
-        GROUP BY status
-    """)
-
-    rows = cursor.fetchall()
-
-    conn.close()
-
-    return rows
-
-def get_project_count():
-
-    conn = get_connection()
-    cursor = conn.cursor()
-
-    cursor.execute(
-        "SELECT COUNT(*) FROM projects"
-    )
-
-    count = cursor.fetchone()[0]
-
-    conn.close()
-
-    return count
 
 def delete_task(task_id):
 
@@ -234,47 +298,59 @@ def delete_task(task_id):
 
     conn.commit()
     conn.close()
-    
-def task_exists(project_id, task_name):
+
+
+# =========================
+# Dashboard Statistics
+# =========================
+
+def get_task_count():
+
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT COUNT(*) FROM tasks"
+    )
+
+    count = cursor.fetchone()[0]
+
+    conn.close()
+
+    return count
+
+
+def get_task_status_counts():
 
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
         """
-        SELECT COUNT(*)
+        SELECT status, COUNT(*)
         FROM tasks
-        WHERE project_id = ?
-        AND task_name = ?
-        """,
-        (
-            project_id,
-            task_name
-        )
+        GROUP BY status
+        """
     )
 
-    count = cursor.fetchone()[0]
+    rows = cursor.fetchall()
 
     conn.close()
 
-    return count > 0
+    return rows
 
-def project_exists(name):
+
+def get_project_count():
 
     conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
-        """
-        SELECT COUNT(*)
-        FROM projects
-        WHERE name = ?
-        """,
-        (name,)
+        "SELECT COUNT(*) FROM projects"
     )
 
     count = cursor.fetchone()[0]
 
     conn.close()
 
-    return count > 0
+    return count

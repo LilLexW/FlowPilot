@@ -3,14 +3,23 @@ import streamlit as st
 from llm import summarize_meeting
 
 from database import (
+    get_projects,
     add_task,
-    task_exists,
-    get_projects
+    task_exists
 )
 
 
 st.title("🤖 AI Meeting Assistant")
 
+st.write(
+    "Transform meeting notes into structured "
+    "project information and actionable tasks."
+)
+
+
+# =========================
+# Meeting Notes
+# =========================
 
 notes = st.text_area(
     "Paste meeting notes here",
@@ -19,56 +28,93 @@ notes = st.text_area(
 
 
 # =========================
-# Generate AI Summary
+# Generate Summary
 # =========================
 
-if st.button("Generate Summary"):
+if st.button(
+    "Generate Summary",
+    type="primary"
+):
 
-    if notes.strip() == "":
-        st.warning("Please enter meeting notes.")
+    if not notes.strip():
+
+        st.warning(
+            "Please enter meeting notes."
+        )
 
     else:
 
-        with st.spinner("AI is analyzing..."):
+        with st.spinner(
+            "AI is analyzing..."
+        ):
 
-            result = summarize_meeting(notes)
+            result = summarize_meeting(
+                notes
+            )
 
-            if isinstance(result, dict) and "error" in result:
 
-                st.error(
-                    result["error"]
-                )
+        if (
+            isinstance(result, dict)
+            and "error" in result
+        ):
 
-            else:
+            st.error(
+                result["error"]
+            )
 
-                st.session_state["meeting_result"] = result
+        else:
+
+            st.session_state[
+                "meeting_result"
+            ] = result
+
+
+            st.success(
+                "Meeting analysis completed."
+            )
 
 
 # =========================
-# Display AI Result
+# Display Result
 # =========================
 
 if "meeting_result" in st.session_state:
 
-    result = st.session_state["meeting_result"]
-    
-if "error" in result:
+    result = st.session_state[
+        "meeting_result"
+    ]
 
-    st.error(
-        result["error"]
-    )
 
-    st.stop()
+    # Safety check
+
+    if (
+        not isinstance(result, dict)
+        or "error" in result
+    ):
+
+        st.error(
+            result.get(
+                "error",
+                "Invalid meeting result."
+            )
+        )
+
+        st.stop()
 
 
     # =========================
     # Summary
     # =========================
 
-    st.subheader("📋 Summary")
+    st.subheader(
+        "📋 Summary"
+    )
 
     st.write(
-        result["summary"]
+        result.get(
+            "summary",
+            "No summary available."
+        )
     )
 
 
@@ -79,27 +125,72 @@ if "error" in result:
     # Action Items
     # =========================
 
-    st.subheader("✅ Action Items")
+    st.subheader(
+        "✅ Action Items"
+    )
 
-    for item in result["action_items"]:
+    action_items = result.get(
+        "action_items",
+        []
+    )
 
-        if isinstance(item, dict):
 
-            st.write(
-                f"**{item.get('task', 'Untitled Task')}**"
-            )
+    if not action_items:
 
-            st.caption(
-                f"Owner: {item.get('owner', 'N/A')} | "
-                f"Priority: {item.get('priority', 'N/A')} | "
-                f"Deadline: {item.get('deadline', 'N/A')}"
-            )
+        st.info(
+            "No action items found."
+        )
 
-        else:
+    else:
 
-            st.write(
-                f"☐ {item}"
-            )
+        for index, item in enumerate(
+            action_items
+        ):
+
+            if isinstance(
+                item,
+                dict
+            ):
+
+                task = item.get(
+                    "task",
+                    "Untitled Task"
+                )
+
+                owner = item.get(
+                    "owner",
+                    "N/A"
+                )
+
+                priority = item.get(
+                    "priority",
+                    "Medium"
+                )
+
+                deadline = item.get(
+                    "deadline",
+                    "N/A"
+                )
+
+
+                st.checkbox(
+                    task,
+                    key=f"action_{index}"
+                )
+
+
+                st.caption(
+                    f"👤 {owner} | "
+                    f"🎯 {priority} | "
+                    f"📅 {deadline}"
+                )
+
+            else:
+
+                st.checkbox(
+                    str(item),
+                    key=f"action_{index}"
+                )
 
 
     st.divider()
@@ -109,29 +200,61 @@ if "error" in result:
     # Risks
     # =========================
 
-    st.subheader("⚠ Risks")
+    st.subheader(
+        "⚠ Risks"
+    )
 
-    for risk in result["risks"]:
+    risks = result.get(
+        "risks",
+        []
+    )
 
-        if isinstance(risk, dict):
 
-            st.warning(
-                risk.get(
+    if not risks:
+
+        st.info(
+            "No major risks identified."
+        )
+
+    else:
+
+        for risk in risks:
+
+            if isinstance(
+                risk,
+                dict
+            ):
+
+                risk_text = risk.get(
                     "risk",
                     "Unknown risk"
                 )
-            )
 
-            st.caption(
-                f"Impact: {risk.get('impact', 'N/A')} | "
-                f"Mitigation: {risk.get('mitigation', 'N/A')}"
-            )
+                impact = risk.get(
+                    "impact",
+                    "Medium"
+                )
 
-        else:
+                mitigation = risk.get(
+                    "mitigation",
+                    "N/A"
+                )
 
-            st.warning(
-                str(risk)
-            )
+
+                st.warning(
+                    f"**{risk_text}**"
+                )
+
+                st.caption(
+                    f"Impact: {impact} | "
+                    f"Mitigation: {mitigation}"
+                )
+
+            else:
+
+                st.warning(
+                    str(risk)
+                )
 
 
     st.divider()
@@ -141,13 +264,29 @@ if "error" in result:
     # Next Steps
     # =========================
 
-    st.subheader("➡ Next Steps")
+    st.subheader(
+        "➡ Next Steps"
+    )
 
-    for step in result["next_steps"]:
+    next_steps = result.get(
+        "next_steps",
+        []
+    )
+
+
+    if not next_steps:
 
         st.info(
-            str(step)
+            "No next steps identified."
         )
+
+    else:
+
+        for step in next_steps:
+
+            st.info(
+                str(step)
+            )
 
 
     st.divider()
@@ -158,17 +297,15 @@ if "error" in result:
     # =========================
 
     st.subheader(
-        "🚀 Convert Action Items into Tasks"
+        "🚀 Generate Project Tasks"
     )
-
 
     projects = get_projects()
 
-
-    if len(projects) == 0:
+    if not projects:
 
         st.warning(
-            "No projects found. Please create a project first."
+            "Create a project before generating tasks."
         )
 
     else:
@@ -178,30 +315,35 @@ if "error" in result:
             for project in projects
         }
 
-
         selected_project = st.selectbox(
             "Select Project",
-            list(project_options.keys())
+            list(project_options.keys()),
+            key="task_project_select"
         )
 
-
-        if st.button("Generate Tasks"):
+        if st.button(
+            "🚀 Generate Tasks",
+            key="generate_tasks"
+        ):
 
             project_id = project_options[
                 selected_project
             ]
 
+            action_items = result.get(
+                "action_items",
+                []
+            )
+
             created_count = 0
             skipped_count = 0
 
+            for item in action_items:
 
-            for item in result["action_items"]:
-
-                # -------------------------
-                # Extract task information
-                # -------------------------
-
-                if isinstance(item, dict):
+                if isinstance(
+                    item,
+                    dict
+                ):
 
                     task_name = item.get(
                         "task",
@@ -226,17 +368,14 @@ if "error" in result:
                 else:
 
                     task_name = str(item)
-
                     owner = "N/A"
-
                     priority = "Medium"
-
                     deadline = "N/A"
 
+                task_name = task_name.strip()
 
-                # -------------------------
-                # Duplicate check
-                # -------------------------
+                if not task_name:
+                    continue
 
                 if task_exists(
                     project_id,
@@ -246,11 +385,6 @@ if "error" in result:
                     skipped_count += 1
 
                     continue
-
-
-                # -------------------------
-                # Create task
-                # -------------------------
 
                 add_task(
                     project_id,
@@ -263,18 +397,12 @@ if "error" in result:
 
                 created_count += 1
 
-
-            # -------------------------
-            # Result message
-            # -------------------------
-
             if created_count > 0:
 
                 st.success(
                     f"Successfully created "
                     f"{created_count} new tasks."
                 )
-
 
             if skipped_count > 0:
 
@@ -283,8 +411,10 @@ if "error" in result:
                     f"tasks were skipped."
                 )
 
-
-            if created_count == 0 and skipped_count == 0:
+            if (
+                created_count == 0
+                and skipped_count == 0
+            ):
 
                 st.warning(
                     "No tasks were generated."
