@@ -136,23 +136,14 @@ The application follows a simple modular architecture:
 
 ## Project Structure
 
-FlowPilot/
-├── app.py
-├── database.py
-├── llm.py
-├── requirements.txt
-├── README.md
-├── .gitignore
-├── pages/
-│   ├── Projects.py
-│   ├── meetings.py
-│   └── tasks.py
-└── screenshots/
-    ├── AI-Meeting-Assistant.png
-    ├── Dashboard.png
-    ├── Duplicate.png
-    ├── Projects.png
-    └── Tasks.png
+- `app.py` — Main Streamlit application
+- `database.py` — SQLite database operations
+- `llm.py` — LLM API integration
+- `requirements.txt` — Python dependencies
+- `pages/meetings.py` — AI Meeting Assistant
+- `pages/tasks.py` — Task management
+- `pages/Projects.py` — Project management
+- `screenshots/` — Project screenshots
 
 ---
 
