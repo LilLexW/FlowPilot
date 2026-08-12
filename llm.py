@@ -45,6 +45,10 @@ def summarize_meeting(notes):
         "model": "openrouter/free",
 
         "max_tokens": 800,
+        
+        "response_format": {
+            "type": "json_object"
+        },
 
         "messages": [
 
@@ -238,46 +242,76 @@ Return JSON only.
     # Parse JSON
     # =========================
 
+    content = content.strip()
+
+
+    # Remove markdown code fences
+
+    if "```json" in content:
+
+        content = content.replace(
+            "```json",
+            ""
+        )
+
+    if "```" in content:
+
+        content = content.replace(
+            "```",
+            ""
+        )
+
+    content = content.strip()
+
+
+    # Find JSON object
+
+    start = content.find("{")
+    end = content.rfind("}")
+
+
+    if start == -1 or end == -1:
+
+        return {
+            "error": (
+                "AI returned invalid JSON. "
+                "Raw response: "
+                + content[:500]
+            )
+        }
+
+
+    json_text = content[
+        start:end + 1
+    ]
+
+
     try:
 
         parsed = json.loads(
-            content
+            json_text
         )
 
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
 
-        # Try extracting JSON object
-        start = content.find("{")
-        end = content.rfind("}")
-
-        if start != -1 and end != -1:
-
-            try:
-
-                parsed = json.loads(
-                    content[start:end + 1]
-                )
-
-            except json.JSONDecodeError:
-
-                return {
-                    "error":
-                        "AI returned invalid JSON."
-                }
-
-        else:
-
-            return {
-                "error":
-                    "AI returned invalid JSON."
-            }
+        return {
+            "error": (
+                "AI returned invalid JSON. "
+                f"Parser error: {e}. "
+                "Raw response: "
+                + content[:500]
+            )
+        }
 
 
     # =========================
     # Validate Structure
     # =========================
 
-    if not isinstance(parsed, dict):
+    if not isinstance(
+        parsed,
+        dict
+    ):
 
         return {
             "error":
