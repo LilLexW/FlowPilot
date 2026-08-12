@@ -44,7 +44,7 @@ def summarize_meeting(notes):
 
         "model": "openrouter/free",
 
-        "max_tokens": 800,
+        "max_tokens": 1500,
         
         "response_format": {
             "type": "json_object"
