@@ -1,96 +1,54 @@
+<p align="center">
+  <img src="screenshots/Dashboard.png" width="1000">
+</p>
+
 # 🚀 FlowPilot
 
 AI-powered project management platform that transforms meeting notes into structured insights and actionable tasks.
 
 [🚀 Live Demo](https://flowpilot.streamlit.app/)
 
----
-
 ## Overview
 
-FlowPilot is an AI-powered project management platform that turns unstructured meeting notes into actionable project tasks.
+FlowPilot is an AI-powered project management platform designed to turn unstructured meeting notes into actionable project tasks.
 
-The system uses an AI Meeting Assistant to analyze meeting notes, extract action items, identify project risks, and generate next steps. Users can then convert these action items into project tasks and manage them through projects, task status, deadlines, and progress tracking.
+Users can paste meeting notes into the AI Meeting Assistant and automatically generate meeting summaries, action items, project risks, and next steps.
 
----
+Action items can then be converted into project tasks and managed through projects, task status, deadlines, and progress tracking.
 
 ## Key Features
 
-### AI Meeting Assistant
+### 🤖 AI Meeting Assistant
 
-- Generate meeting summaries from meeting notes
-- Extract actionable tasks
-- Identify task owners
-- Assign task priorities and deadlines
+- Generate meeting summaries from unstructured meeting notes
+- Extract action items and task owners
 - Identify project risks
 - Generate next steps
-- Return structured JSON for downstream processing
+- Return structured data for task generation
 
-### Automatic Task Generation
+### 📋 Automatic Task Generation
 
 - Convert AI-generated action items into project tasks
-- Assign owners and priorities
-- Store deadlines
-- Prevent duplicate task creation
-- Track task status
+- Assign task owners
+- Set priorities and deadlines
+- Detect and skip duplicate tasks
 
-### Project Management
+### 📁 Project Management
 
-- Create projects
-- View project progress
+- Create and manage projects
 - View project-specific tasks
-- Track completed tasks
+- Track project completion progress
 - Delete projects and associated tasks
 
-### Dashboard
+### 📊 Dashboard
 
-- Total projects
-- Total tasks
-- Tasks in progress
-- Completed tasks
-- Overall completion progress
-
----
-
-## Workflow
-
-Meeting Notes
-
-↓
-
-AI Meeting Assistant
-
-↓
-
-Summary + Action Items + Risks + Next Steps
-
-↓
-
-Task Generation
-
-↓
-
-Duplicate Detection
-
-↓
-
-SQLite Database
-
-↓
-
-Projects + Tasks
-
-↓
-
-Dashboard
-
----
+- View total projects
+- View total tasks
+- Track tasks in progress
+- Track completed tasks
+- Monitor overall task completion progress
 
 ## Screenshots
-
-### Dashboard
-
-![FlowPilot Dashboard](screenshots/Dashboard.png)
 
 ### AI Meeting Assistant
 
@@ -108,44 +66,29 @@ Dashboard
 
 ![Duplicate Task Detection](screenshots/Duplicate.png)
 
----
-
 ## Tech Stack
 
-Python  
-Streamlit  
-SQLite  
-OpenRouter API  
-Google Gemma  
-python-dotenv
+- Python
+- Streamlit
+- SQLite
+- OpenRouter API
+- Google Gemma
+- python-dotenv
 
----
+## Workflow
 
-## Architecture
-
-The application follows a simple modular architecture:
-
-- `app.py` — Main Streamlit dashboard
-- `pages/meetings.py` — AI Meeting Assistant and task generation
-- `pages/tasks.py` — Task management
-- `pages/Projects.py` — Project management
-- `llm.py` — LLM API integration and structured response processing
-- `database.py` — SQLite database operations
-
----
+Meeting Notes → AI Meeting Assistant → Summary / Action Items / Risks / Next Steps → Task Generation → Duplicate Detection → SQLite Database → Projects / Tasks → Dashboard
 
 ## Project Structure
 
-- `app.py` — Main Streamlit application
+- `app.py` — Main Streamlit dashboard
 - `database.py` — SQLite database operations
-- `llm.py` — LLM API integration
-- `requirements.txt` — Python dependencies
-- `pages/meetings.py` — AI Meeting Assistant
+- `llm.py` — LLM API integration and structured response processing
+- `pages/meetings.py` — AI Meeting Assistant and task generation
 - `pages/tasks.py` — Task management
 - `pages/Projects.py` — Project management
 - `screenshots/` — Project screenshots
-
----
+- `requirements.txt` — Python dependencies
 
 ## Local Setup
 
@@ -161,7 +104,7 @@ pip install -r requirements.txt
 
 ### 3. Configure the API key
 
-Create a `.env` file in the project root.
+Create a `.env` file in the project root:
 
 OPENROUTER_API_KEY=your_api_key
 
@@ -169,15 +112,11 @@ OPENROUTER_API_KEY=your_api_key
 
 streamlit run app.py
 
----
-
 ## Security
 
 API keys are stored using environment variables and are not included in the repository.
 
 For the deployed application, API credentials are managed through Streamlit Secrets.
-
----
 
 ## Future Improvements
 
