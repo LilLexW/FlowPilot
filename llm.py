@@ -1,15 +1,22 @@
 import os
 import json
 import requests
+import streamlit as st
 
 from dotenv import load_dotenv
 
 
 load_dotenv()
 
-API_KEY = os.getenv(
-    "OPENROUTER_API_KEY"
-)
+
+try:
+    API_KEY = st.secrets["OPENROUTER_API_KEY"]
+
+except Exception:
+
+    API_KEY = os.getenv(
+        "OPENROUTER_API_KEY"
+    )
 
 
 def summarize_meeting(notes):
