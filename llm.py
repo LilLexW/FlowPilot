@@ -42,8 +42,7 @@ def summarize_meeting(notes):
 
     data = {
 
-        "model":
-            "google/gemma-4-26b-a4b-it:free",
+        "model": "openrouter/free",
 
         "max_tokens": 800,
 
